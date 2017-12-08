@@ -1,0 +1,123 @@
+{% extends "climate_change_end/Base.html" %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    Resultados finales
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    var max_width = 443;
+    var max_loops = 3;
+    var duration = 700;
+    var P = {{ P }}
+    var tau = {{ tau }}
+    var prevention_fund = {{ prevention_fund }}; //prevention_fund = 123;
+    var random_catastrophe = {{ random_catastrophe }}; //random_catastrophe = 0.92;
+    $(document).ready(function() {
+        if (prevention_fund >= tau /*|| true*/) { // Prevention fund amount reached
+            $("#no_catastrophe").show()
+            $("#payoff").show()
+            $("#next_button").show()
+        }
+        else { // Prevention fund amount not reached
+            $("#lottery").show()
+            for (i = 1; i <= max_loops; i++) {
+                $("#marker").animate({"left": "+=" + max_width + "px"}, duration)
+                $("#marker").animate({"left": "-=" + max_width + "px"}, duration)
+            }
+            position = max_width * random_catastrophe;
+            $("#marker").animate({"left": "+=" + position + "px"}, duration, function () {
+                if (random_catastrophe < P) { // Catastrophe happens
+                    $("#marker").addClass('text-danger')
+                    $("#catastrophe").show()
+                    $("#payoff").show()
+                    $("#next_button").show()
+                }
+                else { // Catastrophe does not happen
+                    $("#marker").addClass('text-success')
+                    $("#no_catastrophe").show()
+                    $("#payoff").show()
+                    $("#next_button").show()
+                }
+            })
+        }
+    })
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            Total de tu fondo privado: <b>{{ player.private_fund }}</b>
+        </div>
+        <div class="col-md-12">
+            Total del fondo de prevención: <b>{{ player.prevention_fund }}</b>
+        </div>
+        <div class="col-md-12">
+            El fondo de prevención alcanza la cuantía necesaria ({{ player.tau }}): <b>{{ prevention_amount_reached }}</b>
+        </div>
+    </div>
+
+    <div class="row" id="lottery" style="display:none">
+        <br>
+        <div class="col-md-6">
+            <i class="glyphicon glyphicon-map-marker" id="marker" style="font-size: 16pt;"></i>
+            <div class="progress">
+
+                <div class="progress-bar progress-bar-danger progress-bar-striped"
+                     style="width: {{ pctg_catastrophe }}%;">
+
+                </div>
+
+                <div class="progress-bar progress-bar-success"
+                     style="width: {{ pctg_no_catastrophe }}%;">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="catastrophe" style="display:none">
+        <div class="col-md-6 text-center text-danger">
+            <span class="label label-danger" style="font-size: 10pt;">
+                Ocurre la catástrofe climática
+            </span>
+
+            <br>
+            <br>
+
+            <span class="label label-default" style="font-size: 10pt;">
+                Ganas {{ player.payoff }}
+            </span>
+            <br>
+            <br>
+            <img src="{% static "climate_change_end/catastrophe.jpg" %}" style="width: 100%"/>
+        </div>
+    </div>
+
+    <div class="row"  id="no_catastrophe" style="display: none">
+        <div class="col-md-6 text-center text-success">
+            <br>
+            <span class="label label-success" style="font-size: 10pt;">
+                No hay catástrofe climática
+            </span>
+
+            <br>
+            <br>
+
+            <span class="label label-default" style="font-size: 10pt;">
+                Ganas {{ player.payoff }}
+            </span>
+            <br>
+            <br>
+            <img src="{% static "climate_change_end/no_catastrophe.jpg" %}" style="width: 100%"/>
+        </div>
+    </div>
+
+    <br>
+    <div id="next_button" style="display: none">
+        {% next_button %}
+    </div>
+
+{% endblock %}
